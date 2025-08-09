@@ -141,20 +141,33 @@ def check_dependencies() -> List[Tuple[str, bool, str]]:
     """Check if required Python packages are installed."""
     results = []
     
-    required_packages = [
-        "dlt",
+    # Test packages that are safe to import
+    safe_packages = [
         "requests", 
         "yaml",
         "pandas",
         "pyarrow"
     ]
     
-    for package in required_packages:
+    for package in safe_packages:
         try:
             __import__(package)
             results.append((f"Python: {package}", True, "✓ Installed"))
         except ImportError:
             results.append((f"Python: {package}", False, "✗ Not installed"))
+    
+    # Test dlt using subprocess to avoid import issues
+    try:
+        import subprocess
+        result = subprocess.run(["python3", "-c", "import dlt; print(dlt.__version__)"], 
+                              capture_output=True, text=True, timeout=5)
+        if result.returncode == 0:
+            version = result.stdout.strip()
+            results.append((f"Python: dlt", True, f"✓ Installed (v{version})"))
+        else:
+            results.append((f"Python: dlt", False, "✗ Import failed"))
+    except Exception as e:
+        results.append((f"Python: dlt", False, f"✗ Error: {str(e)[:30]}"))
     
     return results
 

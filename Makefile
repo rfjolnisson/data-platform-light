@@ -36,7 +36,7 @@ bootstrap:
 
 check:
 	@echo "🔍 Validating environment..."
-	python scripts/validate_env.py
+	python3 scripts/validate_env.py
 
 # Main sync operations
 sync-all:
