@@ -1,5 +1,5 @@
 # Core data pipeline dependencies
-dlt[duckdb,parquet]>=0.4.0
+dlt[duckdb,parquet]==0.4.12
 requests>=2.31.0
 PyYAML>=6.0
 pandas>=2.1.0
