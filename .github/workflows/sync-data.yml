@@ -1,0 +1,92 @@
+name: Data Platform Sync
+
+on:
+  push: 
+    branches: [main]
+    paths: ['pipelines/**', 'config/**', 'Makefile', 'requirements.txt', 'scripts/**']
+  schedule: 
+    - cron: '0 1 * * *'    # 1 AM UTC = 2 AM Berlin (winter) / 3 AM Berlin (summer)
+  workflow_dispatch:       # Manual trigger
+    inputs:
+      action:
+        description: 'Action to perform'
+        type: choice
+        options: ['sync-all', 'sync-jira', 'sync-bitbucket', 'sync-jenkins', 'backfill']
+        default: 'sync-all'
+      backfill_days:
+        description: 'Days to backfill (only for backfill action)'
+        type: string
+        default: '7'
+
+jobs:
+  sync:
+    runs-on: self-hosted
+    timeout-minutes: 120
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          
+      - name: Install dependencies
+        run: make bootstrap
+        
+      - name: Validate environment
+        run: make check
+        env:
+          JIRA_URL: ${{ secrets.JIRA_URL }}
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          BITBUCKET_WORKSPACE: ${{ secrets.BITBUCKET_WORKSPACE }}
+          BITBUCKET_USERNAME: ${{ secrets.BITBUCKET_USERNAME }}
+          BITBUCKET_APP_PASSWORD: ${{ secrets.BITBUCKET_APP_PASSWORD }}
+          JENKINS_URL: ${{ secrets.JENKINS_URL }}
+          JENKINS_USERNAME: ${{ secrets.JENKINS_USERNAME }}
+          JENKINS_API_TOKEN: ${{ secrets.JENKINS_API_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          
+      - name: Run data sync
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            if [ "${{ inputs.action }}" == "backfill" ]; then
+              make backfill DAYS=${{ inputs.backfill_days }}
+            else
+              make ${{ inputs.action }}
+            fi
+          else
+            make sync-all
+          fi
+        env:
+          JIRA_URL: ${{ secrets.JIRA_URL }}
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          BITBUCKET_WORKSPACE: ${{ secrets.BITBUCKET_WORKSPACE }}
+          BITBUCKET_USERNAME: ${{ secrets.BITBUCKET_USERNAME }}
+          BITBUCKET_APP_PASSWORD: ${{ secrets.BITBUCKET_APP_PASSWORD }}
+          JENKINS_URL: ${{ secrets.JENKINS_URL }}
+          JENKINS_USERNAME: ${{ secrets.JENKINS_USERNAME }}
+          JENKINS_API_TOKEN: ${{ secrets.JENKINS_API_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          
+      - name: Upload Bronze artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bronze-data-${{ github.run_number }}
+          path: |
+            bronze/**/manifest.parquet
+            bronze/**/cursors.parquet
+            logs/*.log
+          retention-days: 30
+          
+      - name: Show sync summary
+        if: always()
+        run: |
+          echo "=== Sync Summary ==="
+          make show-cursors || echo "Cursors not yet implemented"
+          make show-manifest || echo "Manifest not yet implemented"

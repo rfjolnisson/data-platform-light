@@ -1,0 +1,21 @@
+# Identity resolution and merge rules (for future Silver layer)
+# This file defines how to match users/entities across systems
+
+user_matching:
+  # Rules for matching users across Jira, Bitbucket, Jenkins
+  primary_key: "email"
+  fallback_keys: ["username", "display_name"]
+  
+  # Known mappings (when automatic matching fails)
+  overrides:
+    # jira_account_id: bitbucket_username: jenkins_username
+    # "5d8c8c0a1234567890abcdef": "ragnarfjolnisson": "ragnarfjolnisson"
+    
+project_matching:
+  # Map repository names to Jira projects
+  repo_to_project:
+    "platform": ["KAP", "INT"]
+    "core": ["KAP"] 
+    "mobile": ["KAP"]
+    
+# For future use in Silver layer transformations

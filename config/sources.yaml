@@ -1,0 +1,33 @@
+jira:
+  base_url: "${JIRA_URL}"
+  projects: ["KAP", "INT", "BEL"]          # Kaptio project keys
+  jql: 'project in (${projects}) ORDER BY updated DESC'
+  expand: ["renderedFields", "changelog"]   # transitions optional
+  page_size: 100
+  lookback_days_first_run: 120
+  cursor_field: "updated"
+  
+bitbucket:
+  workspace: "${BITBUCKET_WORKSPACE}"      # kaptio workspace
+  repos: ["platform", "core", "mobile"]    # main repos, or "*" for all
+  page_size: 50
+  pr_states: ["OPEN", "MERGED", "DECLINED"]
+  lookback_days_first_run: 120
+  cursor_field_prs: "updated_on"
+  cursor_field_commits: "date"
+  
+jenkins:
+  base_url: "${JENKINS_URL}"
+  jobs_include: ["deploy-prod", "release-*", "build-*"]  # job name patterns
+  include_changesets: true
+  lookback_days_first_run: 120
+  cursor_field: "number"                   # or timestamp
+  
+common:
+  concurrency: 3                           # parallel streams
+  retry:
+    max_attempts: 7
+    base_delay_seconds: 2
+    max_delay_seconds: 60
+  output_dir: "./bronze"
+  safety_window_hours: 2                   # overlap for incremental sync

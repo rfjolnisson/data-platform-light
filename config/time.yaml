@@ -1,0 +1,13 @@
+timezone: "Europe/Berlin"
+week_ends: "Sunday 23:59:59"
+
+# Time windows for different data types
+windows:
+  jira_sync: "daily"           # how often to sync Jira
+  bitbucket_sync: "daily"      # how often to sync Bitbucket  
+  jenkins_sync: "daily"        # how often to sync Jenkins
+  
+# Scheduling preferences
+schedule:
+  preferred_sync_hour: 2       # 2 AM Berlin time
+  max_runtime_hours: 2         # timeout after 2 hours

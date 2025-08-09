@@ -1,0 +1,27 @@
+# AI tagging and analysis policies (for future agent capabilities)
+# No effect on Bronze layer - this is for Silver/Gold transformations
+
+content_classification:
+  # Sensitivity levels for different data types
+  public: ["project_metadata", "public_repos", "build_status"]
+  internal: ["issue_descriptions", "pr_descriptions", "commit_messages"] 
+  confidential: ["user_emails", "api_tokens", "private_comments"]
+  
+ai_processing:
+  # What AI can analyze
+  enabled_for:
+    - "issue_sentiment_analysis"
+    - "pr_complexity_scoring"
+    - "build_failure_categorization"
+  
+  # What AI should NOT process
+  excluded_fields:
+    - "email"
+    - "api_token" 
+    - "password"
+    - "private_key"
+    
+# Embedding and search policies
+embeddings:
+  include_types: ["issue_summary", "pr_title", "commit_message"]
+  exclude_patterns: ["CONFIDENTIAL", "PRIVATE", "SECRET"]
