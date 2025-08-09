@@ -2,7 +2,7 @@ name: Data Platform Sync
 
 on:
   push: 
-    branches: [main]
+    branches: [master]
     paths: ['pipelines/**', 'config/**', 'Makefile', 'requirements.txt', 'scripts/**']
   schedule: 
     - cron: '0 1 * * *'    # 1 AM UTC = 2 AM Berlin (winter) / 3 AM Berlin (summer)
